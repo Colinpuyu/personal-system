@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}{% if item %}编辑知识库{% else %}新建知识库{% endif %} - 产品经理空间{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    {% if item %}
+                        <i class="bi bi-pencil"></i> 编辑知识库
+                    {% else %}
+                        <i class="bi bi-plus-circle"></i> 新建知识库
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="knowledgeForm">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">标题 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{{ item.title if item else '' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="source" class="form-label">来源 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="source" name="source" required>
+                            <option value="">请选择来源</option>
+                            <option value="会议" {% if item and item.source == '会议' %}selected{% endif %}>会议</option>
+                            <option value="课程" {% if item and item.source == '课程' %}selected{% endif %}>课程</option>
+                            <option value="竞品" {% if item and item.source == '竞品' %}selected{% endif %}>竞品</option>
+                            <option value="灵感" {% if item and item.source == '灵感' %}selected{% endif %}>灵感</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confidence" class="form-label">置信度</label>
+                        <select class="form-select" id="confidence" name="confidence">
+                            <option value="1" {% if item and item.confidence == 1 %}selected{% endif %}>1 - 低</option>
+                            <option value="2" {% if item and item.confidence == 2 %}selected{% endif %}>2 - 中</option>
+                            <option value="3" {% if item and item.confidence == 3 %}selected{% endif %}>3 - 高</option>
+                            <option value="4" {% if item and item.confidence == 4 %}selected{% endif %}>4 - 很高</option>
+                            <option value="5" {% if item and item.confidence == 5 %}selected{% endif %}>5 - 极高</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">标签</label>
+                        <input type="text" class="form-control" id="tags" name="tags" 
+                               value="{{ item.tags if item else '' }}" 
+                               placeholder="用逗号分隔多个标签，如：产品设计,用户体验,移动端">
+                        <div class="form-text">用逗号分隔多个标签</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">内容 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="content" name="content" rows="10" required>{{ item.content if item else '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">备注</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3">{{ item.notes if item else '' }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('product_space.knowledge_list') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 返回列表
+                        </a>
+                        <div>
+                            <button type="button" class="btn btn-outline-primary me-2" onclick="previewContent()">
+                                <i class="bi bi-eye"></i> 预览
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> {% if item %}保存修改{% else %}创建知识库{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 预览模态框 -->
+        <div class="modal fade" id="previewModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">内容预览</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="previewContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewContent() {
+    const title = document.getElementById('title').value;
+    const source = document.getElementById('source').value;
+    const tags = document.getElementById('tags').value;
+    const content = document.getElementById('content').value;
+    
+    if (!title || !source || !content) {
+        alert('请填写必填字段后再预览');
+        return;
+    }
+    
+    let confidence = document.getElementById('confidence').value;
+    const confidenceLabel = ['','低','中','高','很高','极高'][confidence] || '';
+    
+    let previewHtml = `
+        <div class="card">
+            <div class="card-header">
+                <h5>${title}</h5>
+                <span class="badge bg-secondary">${source}</span>
+                ${confidence ? `<span class="badge bg-info">置信度: ${confidenceLabel}</span>` : ''}
+                ${tags ? tags.split(',').map(tag => `<span class="badge bg-light text-dark">${tag.trim()}</span>`).join('') : ''}
+            </div>
+            <div class="card-body">
+                ${content.replace(/\n/g, '<br>')}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('previewContent').innerHTML = previewHtml;
+    
+    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+    modal.show();
+}
+
+// 自动保存草稿
+let autoSaveTimer;
+document.getElementById('knowledgeForm').addEventListener('input', function() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(function() {
+        saveDraft();
+    }, 3000); // 3秒后自动保存
+});
+
+function saveDraft() {
+    const formData = new FormData(document.getElementById('knowledgeForm'));
+    const data = Object.fromEntries(formData);
+    
+    localStorage.setItem('knowledge_draft', JSON.stringify(data));
+    console.log('草稿已保存');
+}
+
+// 页面加载时恢复草稿
+window.addEventListener('load', function() {
+    const draft = localStorage.getItem('knowledge_draft');
+    if (draft && !document.getElementById('title').value) {
+        if (confirm('检测到未提交的草稿，是否恢复？')) {
+            const data = JSON.parse(draft);
+            document.getElementById('title').value = data.title || '';
+            document.getElementById('source').value = data.source || '';
+            document.getElementById('confidence').value = data.confidence || '3';
+            document.getElementById('tags').value = data.tags || '';
+            document.getElementById('content').value = data.content || '';
+        }
+    }
+});
+
+// 提交成功后清除草稿
+document.getElementById('knowledgeForm').addEventListener('submit', function() {
+    localStorage.removeItem('knowledge_draft');
+});
+</script>
+{% endblock %}

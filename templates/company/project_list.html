@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}{{ company.name }} - 项目列表 - 公司项目管理{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- 侧边栏 -->
+        <div class="col-md-3 col-lg-2 px-0">
+            <div class="sidebar p-3">
+                <h5 class="mb-3">公司项目管理</h5>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="{{ url_for('company_projects.company_list') }}">
+                        <i class="bi bi-building me-2"></i>公司列表
+                    </a>
+                    <a class="nav-link active" href="{{ url_for('company_projects.company_detail', company_id=company.id) }}">
+                        <i class="bi bi-building-fill me-2"></i>{{ company.name }}
+                    </a>
+                    <a class="nav-link" href="{{ url_for('company_projects.company_projects', company_id=company.id) }}">
+                        <i class="bi bi-kanban me-2"></i>项目列表
+                    </a>
+                    <a class="nav-link" href="{{ url_for('company_projects.project_new', company_id=company.id) }}">
+                        <i class="bi bi-plus-circle me-2"></i>新建项目
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="col-md-9 col-lg-10">
+            <div class="main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>{{ company.name }} - 项目列表</h2>
+                    <a href="{{ url_for('company_projects.project_new', company_id=company.id) }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>新建项目
+                    </a>
+                </div>
+
+                <!-- 状态筛选 -->
+                <div class="mb-3">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('company_projects.company_projects', company_id=company.id) }}" 
+                           class="btn btn-outline-secondary {% if not request.args.get('status') %}active{% endif %}">
+                            全部
+                        </a>
+                        <a href="{{ url_for('company_projects.company_projects', company_id=company.id, status='进行中') }}" 
+                           class="btn btn-outline-secondary {% if request.args.get('status') == '进行中' %}active{% endif %}">
+                            进行中
+                        </a>
+                        <a href="{{ url_for('company_projects.company_projects', company_id=company.id, status='计划中') }}" 
+                           class="btn btn-outline-secondary {% if request.args.get('status') == '计划中' %}active{% endif %}">
+                            计划中
+                        </a>
+                        <a href="{{ url_for('company_projects.company_projects', company_id=company.id, status='已完成') }}" 
+                           class="btn btn-outline-secondary {% if request.args.get('status') == '已完成' %}active{% endif %}">
+                            已完成
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 项目列表 -->
+                <div class="row">
+                    {% for project in projects %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">{{ project.name }}</h5>
+                                <span class="badge 
+                                    {% if project.status == '进行中' %}bg-success
+                                    {% elif project.status == '计划中' %}bg-warning
+                                    {% elif project.status == '已完成' %}bg-info
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ project.status }}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        {{ project.created_at.strftime('%Y-%m-%d') }}
+                                    </small>
+                                    <a href="{{ url_for('company_projects.project_detail', company_id=company.id, project_id=project.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        查看详情
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            暂无项目，
+                            <a href="{{ url_for('company_projects.project_new', company_id=company.id) }}" class="alert-link">
+                                创建第一个项目
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}知识库列表 - 产品经理空间{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-book"></i> 知识库列表</h2>
+    <a href="{{ url_for('product_space.knowledge_new') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> 新建知识库
+    </a>
+</div>
+
+<!-- 筛选区域 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <form method="GET" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="搜索知识库..." value="{{ request.args.get('search', '') }}">
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+    <div class="col-md-3">
+        <select name="source" class="form-select" onchange="this.form.submit()">
+            <option value="">所有来源</option>
+            {% for source in all_sources %}
+                <option value="{{ source }}" {% if request.args.get('source') == source %}selected{% endif %}>{{ source }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="tag" class="form-select" onchange="this.form.submit()">
+            <option value="">所有标签</option>
+            {% for tag in all_tags %}
+                <option value="{{ tag }}" {% if request.args.get('tag') == tag %}selected{% endif %}>{{ tag }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<!-- 知识库列表 -->
+{% if knowledge_items %}
+<div class="row">
+    {% for item in knowledge_items %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ item.title }}</h5>
+                <span class="badge bg-secondary">{{ item.source }}</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ item.content[:200] }}...</p>
+                {% if item.tags %}
+                    <div class="mb-2">
+                        {% for tag in item.get_tags_list() %}
+                            <span class="badge bg-light text-dark">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i> 更新于 {{ item.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                    </small>
+                    <small class="text-muted">
+                        <i class="bi bi-eye"></i> 访问 {{ item.access_count }}
+                    </small>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('product_space.knowledge_detail', id=item.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> 查看详情
+                    </a>
+                    <div>
+                        <a href="{{ url_for('product_space.knowledge_edit', id=item.id) }}" class="btn btn-sm btn-outline-secondary me-1">
+                            <i class="bi bi-pencil"></i> 编辑
+                        </a>
+                        <form method="POST" action="{{ url_for('product_space.knowledge_delete', id=item.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要删除这个知识库条目吗？')">
+                                <i class="bi bi-trash"></i> 删除
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> 暂无知识库条目，
+    <a href="{{ url_for('product_space.knowledge_new') }}">点击创建第一个知识库</a>
+</div>
+{% endif %}
+
+<!-- 统计信息 -->
+<div class="card mt-5">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-bar-chart"></i> 统计信息
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-book display-4 text-primary"></i>
+                        <h6 class="mt-2">总条目数</h6>
+                        <p class="small text-muted">{{ knowledge_items|length }} 条目</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-tags display-4 text-info"></i>
+                        <h6 class="mt-2">标签数量</h6>
+                        <p class="small text-muted">{{ all_tags|length }} 标签</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-source display-4 text-success"></i>
+                        <h6 class="mt-2">来源数量</h6>
+                        <p class="small text-muted">{{ all_sources|length }} 来源</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-eye display-4 text-warning"></i>
+                        <h6 class="mt-2">总访问</h6>
+                        <p class="small text-muted">{{ knowledge_items|sum(attribute='access_count') }} 次</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

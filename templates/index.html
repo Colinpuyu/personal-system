@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 个人管理系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">欢迎使用个人管理系统</h1>
+        <p class="lead">整合产品经理空间、公司项目管理和全局搜索功能的一体化平台</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 快速统计 -->
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-book display-4 text-primary"></i>
+                <h5 class="card-title mt-2">知识库</h5>
+                <h2 class="text-primary">{{ stats.knowledge_count }}</h2>
+                <p class="card-text">已创建的知识库条目</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-building display-4 text-success"></i>
+                <h5 class="card-title mt-2">公司</h5>
+                <h2 class="text-success">{{ stats.company_count }}</h2>
+                <p class="card-text">已管理的公司</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-folder display-4 text-warning"></i>
+                <h5 class="card-title mt-2">项目</h5>
+                <h2 class="text-warning">{{ stats.project_count }}</h2>
+                <p class="card-text">进行中的项目</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-file-text display-4 text-info"></i>
+                <h5 class="card-title mt-2">文档</h5>
+                <h2 class="text-info">{{ stats.document_count }}</h2>
+                <p class="card-text">已上传的文档</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 最近活动 -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock"></i> 最近活动
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_activities %}
+                    <div class="list-group">
+                        {% for activity in recent_activities %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ activity.title }}</h6>
+                                <small class="text-muted">{{ activity.time }}</small>
+                            </div>
+                            <p class="mb-1">{{ activity.description }}</p>
+                            <small class="text-muted">
+                                <i class="bi bi-{{ activity.icon }}"></i> {{ activity.type }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">暂无最近活动</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 快速操作 -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning"></i> 快速操作
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <a href="{{ url_for('product_space.knowledge_new') }}" class="btn btn-primary w-100">
+                            <i class="bi bi-plus-circle"></i> 新建知识库
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="{{ url_for('company_projects.company_list') }}" class="btn btn-success w-100">
+                            <i class="bi bi-building"></i> 管理公司
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="{{ url_for('product_space.knowledge_list') }}" class="btn btn-info w-100">
+                            <i class="bi bi-book"></i> 知识库管理
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="#" class="btn btn-warning w-100" onclick="showGlobalSearch()">
+                            <i class="bi bi-search"></i> 全局搜索
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 最新知识库 -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-book"></i> 最新知识库
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_knowledge %}
+                    <div class="list-group">
+                        {% for item in recent_knowledge %}
+                        <a href="{{ url_for('product_space.knowledge_detail', id=item.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ item.title }}</h6>
+                                <small class="text-muted">{{ item.created_at.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                            <p class="mb-1">{{ item.content[:100] }}...</p>
+                            <small class="text-muted">
+                                <span class="badge bg-secondary">{{ item.category }}</span>
+                                {% if item.tags %}
+                                    {% for tag in item.tags.split(',') %}
+                                        <span class="badge bg-light text-dark">{{ tag.strip() }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">暂无知识库条目</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 最新项目 -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-folder"></i> 最新项目
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_projects %}
+                    <div class="list-group">
+                        {% for project in recent_projects %}
+                        <a href="{{ url_for('company_projects.project_detail', company_id=project.company_id, project_id=project.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ project.name }}</h6>
+                                <span class="badge bg-primary status-badge">{{ project.status }}</span>
+                            </div>
+                            <p class="mb-1">{{ project.description or '暂无描述' }}</p>
+                            <small class="text-muted">
+                                <i class="bi bi-building"></i> {{ project.company.name }}
+                                <span class="ms-2">{{ project.created_at.strftime('%Y-%m-%d') }}</span>
+                            </small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">暂无项目</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

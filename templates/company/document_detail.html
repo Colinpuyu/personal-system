@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}{{ document.title }} - {{ project.name }} - 公司项目管理{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- 侧边栏 -->
+        <div class="col-md-3 col-lg-2 px-0">
+            <div class="sidebar p-3">
+                <h5 class="mb-3">公司项目管理</h5>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="{{ url_for('company_projects.company_list') }}">
+                        <i class="bi bi-building me-2"></i>公司列表
+                    </a>
+                    <a class="nav-link" href="{{ url_for('company_projects.company_detail', company_id=company.id) }}">
+                        <i class="bi bi-building-fill me-2"></i>{{ company.name }}
+                    </a>
+                    <a class="nav-link" href="{{ url_for('company_projects.company_projects', company_id=company.id) }}">
+                        <i class="bi bi-kanban me-2"></i>项目列表
+                    </a>
+                    <a class="nav-link" href="{{ url_for('company_projects.project_detail', company_id=company.id, project_id=project.id) }}">
+                        <i class="bi bi-folder me-2"></i>{{ project.name }}
+                    </a>
+                    <a class="nav-link active" href="#">
+                        <i class="bi bi-file-text me-2"></i>{{ document.title }}
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="col-md-9 col-lg-10">
+            <div class="main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2>{{ document.title }}</h2>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{{ url_for('company_projects.company_list') }}">公司</a></li>
+                                <li class="breadcrumb-item"><a href="{{ url_for('company_projects.company_detail', company_id=company.id) }}">{{ company.name }}</a></li>
+                                <li class="breadcrumb-item"><a href="{{ url_for('company_projects.project_detail', company_id=company.id, project_id=project.id) }}">{{ project.name }}</a></li>
+                                <li class="breadcrumb-item active">{{ document.title }}</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('company_projects.project_detail', company_id=company.id, project_id=project.id) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>返回项目
+                        </a>
+                        <a href="{{ url_for('company_projects.document_new', company_id=company.id, project_id=project.id) }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>上传文档
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">文档详情</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if document.file_path %}
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        这是一个文件文档，文件路径：{{ document.file_path }}
+                                    </div>
+                                    <div class="text-center">
+                                        <a href="{{ url_for('static', filename=document.file_path) }}" class="btn btn-primary" download>
+                                            <i class="bi bi-download me-2"></i>下载文件
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        这是一个纯文本文档
+                                    </div>
+                                    <div class="border rounded p-3 bg-light">
+                                        <p class="mb-0">文档内容将在这里显示...</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">文档信息</h5>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4">类型</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge bg-secondary">{{ document.document_type }}</span>
+                                    </dd>
+                                    
+                                    <dt class="col-sm-4">项目</dt>
+                                    <dd class="col-sm-8">{{ project.name }}</dd>
+                                    
+                                    <dt class="col-sm-4">公司</dt>
+                                    <dd class="col-sm-8">{{ company.name }}</dd>
+                                    
+                                    <dt class="col-sm-4">创建时间</dt>
+                                    <dd class="col-sm-8">{{ document.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+                                    
+                                    {% if document.updated_at %}
+                                    <dt class="col-sm-4">更新时间</dt>
+                                    <dd class="col-sm-8">{{ document.updated_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+                                    {% endif %}
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

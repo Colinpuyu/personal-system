@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}公司列表 - 公司项目管理{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-building"></i> 公司管理</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+        <i class="bi bi-plus-circle"></i> 添加公司
+    </button>
+</div>
+
+<!-- 搜索栏 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="搜索公司名称..." value="{{ request.args.get('search', '') }}">
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- 公司列表 -->
+{% if companies %}
+<div class="row">
+    {% for company in companies %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ company.name }}</h5>
+                <div class="btn-group btn-group-sm">
+                    <a href="{{ url_for('company_projects.company_detail', company_id=company.id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary" onclick="editCompany({{ company.id }})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" onclick="deleteCompany({{ company.id }})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ company.description or '暂无描述' }}</p>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ company.projects|length }}</h4>
+                        <small class="text-muted">项目数</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">{{ company.documents|length }}</h4>
+                        <small class="text-muted">文档数</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">
+                    <i class="bi bi-clock"></i> 创建于 {{ company.created_at.strftime('%Y-%m-%d') }}
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> 暂无公司信息，
+    <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#addCompanyModal">点击添加第一个公司</button>
+</div>
+{% endif %}
+
+<!-- 添加公司模态框 -->
+<div class="modal fade" id="addCompanyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加新公司</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addCompanyForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label">公司名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="companyName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="companyDescription" class="form-label">公司描述</label>
+                        <textarea class="form-control" id="companyDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">添加公司</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑公司模态框 -->
+<div class="modal fade" id="editCompanyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">编辑公司信息</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editCompanyForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editCompanyId">
+                    <div class="mb-3">
+                        <label for="editCompanyName" class="form-label">公司名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="editCompanyName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCompanyDescription" class="form-label">公司描述</label>
+                        <textarea class="form-control" id="editCompanyDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 添加公司
+document.getElementById('addCompanyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const data = {
+        name: document.getElementById('companyName').value,
+        description: document.getElementById('companyDescription').value
+    };
+    
+    fetch('/api/companies', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            location.reload();
+        } else {
+            alert('添加失败：' + result.error);
+        }
+    })
+    .catch(error => {
+        console.error('添加失败:', error);
+        alert('添加失败，请重试');
+    });
+});
+
+// 编辑公司
+function editCompany(companyId) {
+    fetch(`/api/companies/${companyId}`)
+        .then(response => response.json())
+        .then(company => {
+            document.getElementById('editCompanyId').value = company.id;
+            document.getElementById('editCompanyName').value = company.name;
+            document.getElementById('editCompanyDescription').value = company.description;
+            
+            const modal = new bootstrap.Modal(document.getElementById('editCompanyModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('获取公司信息失败:', error);
+            alert('获取公司信息失败');
+        });
+}
+
+// 保存编辑
+document.getElementById('editCompanyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const companyId = document.getElementById('editCompanyId').value;
+    const data = {
+        name: document.getElementById('editCompanyName').value,
+        description: document.getElementById('editCompanyDescription').value
+    };
+    
+    fetch(`/api/companies/${companyId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            location.reload();
+        } else {
+            alert('保存失败：' + result.error);
+        }
+    })
+    .catch(error => {
+        console.error('保存失败:', error);
+        alert('保存失败，请重试');
+    });
+});
+
+// 删除公司
+function deleteCompany(companyId) {
+    if (confirm('确定要删除这家公司吗？这将同时删除该公司的所有项目和文档。')) {
+        fetch(`/api/companies/${companyId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                location.reload();
+            } else {
+                alert('删除失败：' + result.error);
+            }
+        })
+        .catch(error => {
+            console.error('删除失败:', error);
+            alert('删除失败，请重试');
+        });
+    }
+}
+</script>
+{% endblock %}

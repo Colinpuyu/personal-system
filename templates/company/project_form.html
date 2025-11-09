@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if project %}
+        编辑项目 - {{ project.name }}
+    {% else %}
+        创建新项目
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            {% include 'company/_sidebar.html' %}
+        </div>
+        <div class="col-md-9">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('company_projects.company_list') }}">公司列表</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('company_projects.company_detail', company_id=company.id) }}">{{ company.name }}</a></li>
+                    {% if project %}
+                        <li class="breadcrumb-item"><a href="{{ url_for('company_projects.project_detail', company_id=company.id, project_id=project.id) }}">{{ project.name }}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">编辑</li>
+                    {% else %}
+                        <li class="breadcrumb-item active" aria-current="page">创建新项目</li>
+                    {% endif %}
+                </ol>
+            </nav>
+
+            <h2>{% if project %}编辑项目{% else %}创建新项目{% endif %}</h2>
+            <hr>
+
+            <form method="POST" action="">
+                <div class="mb-3">
+                    <label for="name" class="form-label">项目名称</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ project.name if project else '' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">项目描述</label>
+                    <textarea class="form-control" id="description" name="description" rows="5" required>{{ project.description if project else '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="status" class="form-label">项目状态</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="计划中" {% if project and project.status == '计划中' %}selected{% endif %}>计划中</option>
+                        <option value="进行中" {% if project and project.status == '进行中' %}selected{% endif %}>进行中</option>
+                        <option value="已完成" {% if project and project.status == '已完成' %}selected{% endif %}>已完成</option>
+                        <option value="已归档" {% if project and project.status == '已归档' %}selected{% endif %}>已归档</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">{% if project %}更新项目{% else %}创建项目{% endif %}</button>
+                <a href="{{ url_for('company_projects.company_detail', company_id=company.id) }}" class="btn btn-secondary">取消</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+    上传新文档 - {{ project.name }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            {% include 'company/_sidebar.html' %}
+        </div>
+        <div class="col-md-9">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('company_projects.company_list') }}">公司列表</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('company_projects.company_detail', company_id=company.id) }}">{{ company.name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('company_projects.project_detail', company_id=company.id, project_id=project.id) }}">{{ project.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">上传新文档</li>
+                </ol>
+            </nav>
+
+            <h2>上传新文档</h2>
+            <hr>
+
+            <form method="POST" action="" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="title" class="form-label">文档标题</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="document_type" class="form-label">文档类型</label>
+                    <select class="form-select" id="document_type" name="document_type">
+                        <option value="文档" selected>文档</option>
+                        <option value="设计稿">设计稿</option>
+                        <option value="会议纪要">会议纪要</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="file" class="form-label">上传文件 (可选)</label>
+                    <input class="form-control" type="file" id="file" name="file">
+                    <div class="form-text">如果未选择文件，将创建一个纯文本文档。</div>
+                </div>
+                <button type="submit" class="btn btn-primary">上传文档</button>
+                <a href="{{ url_for('company_projects.project_detail', company_id=company.id, project_id=project.id) }}" class="btn btn-secondary">取消</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

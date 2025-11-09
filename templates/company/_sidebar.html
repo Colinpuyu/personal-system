@@ -1,0 +1,24 @@
+<div class="sidebar">
+    <div class="p-3">
+        <h4 class="mb-3">公司导航</h4>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'company_projects.company_list' %}active{% endif %}" href="{{ url_for('company_projects.company_list') }}">
+                    <i class="bi bi-building"></i> 公司列表
+                </a>
+            </li>
+            {% if company %}
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'company_projects.company_detail' %}active{% endif %}" href="{{ url_for('company_projects.company_detail', company_id=company.id) }}">
+                    <i class="bi bi-info-circle"></i> 公司详情
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'project' in request.endpoint %}active{% endif %}" href="{{ url_for('company_projects.company_projects', company_id=company.id) }}">
+                    <i class="bi bi-folder"></i> 项目列表
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>

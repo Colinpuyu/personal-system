@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}知识库 - 产品经理空间{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-book"></i> 知识库管理</h2>
+    <a href="{{ url_for('product_space.knowledge_base_new') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> 新建知识库
+    </a>
+</div>
+
+<!-- 搜索和筛选 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="GET" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="搜索知识库..." value="{{ request.args.get('search', '') }}">
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
+    <div class="col-md-3">
+        <select name="category" class="form-select" onchange="this.form.submit()">
+            <option value="">所有分类</option>
+            <option value="产品规划" {% if request.args.get('category') == '产品规划' %}selected{% endif %}>产品规划</option>
+            <option value="需求分析" {% if request.args.get('category') == '需求分析' %}selected{% endif %}>需求分析</option>
+            <option value="用户研究" {% if request.args.get('category') == '用户研究' %}selected{% endif %}>用户研究</option>
+            <option value="竞品分析" {% if request.args.get('category') == '竞品分析' %}selected{% endif %}>竞品分析</option>
+            <option value="其他" {% if request.args.get('category') == '其他' %}selected{% endif %}>其他</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="sort" class="form-select" onchange="this.form.submit()">
+            <option value="updated" {% if request.args.get('sort') == 'updated' %}selected{% endif %}>最近更新</option>
+            <option value="created" {% if request.args.get('sort') == 'created' %}selected{% endif %}>创建时间</option>
+            <option value="title" {% if request.args.get('sort') == 'title' %}selected{% endif %}>标题排序</option>
+        </select>
+    </div>
+</div>
+
+<!-- 知识库列表 -->
+{% if knowledge_items %}
+<div class="row">
+    {% for item in knowledge_items %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ item.title }}</h5>
+                <span class="badge bg-secondary">{{ item.category }}</span>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ item.content[:200] }}...</p>
+                {% if item.tags %}
+                    <div class="mb-2">
+                        {% for tag in item.tags.split(',') %}
+                            <span class="badge bg-light text-dark">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="text-muted">
+                    <i class="bi bi-clock"></i> 更新于 {{ item.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                </small>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('product_space.knowledge_detail', id=item.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> 查看详情
+                    </a>
+                    <div>
+                        <a href="{{ url_for('product_space.knowledge_edit', id=item.id) }}" class="btn btn-sm btn-outline-secondary me-1">
+                            <i class="bi bi-pencil"></i> 编辑
+                        </a>
+                        <button onclick="deleteKnowledge({{ item.id }})" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 分页 -->
+{% if pagination %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% for page in pagination.iter_pages() %}
+            {% if page %}
+                {% if page != pagination.page %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('product_space.knowledge_base', page=page, **request.args) }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page }}</span>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> 暂无知识库条目，
+    <a href="{{ url_for('product_space.knowledge_base_new') }}">点击创建第一个知识库</a>
+</div>
+{% endif %}
+
+<!-- 能力地图 -->
+<div class="card mt-5">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-diagram-3"></i> 能力地图
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-lightbulb display-4 text-warning"></i>
+                        <h6 class="mt-2">产品规划</h6>
+                        <p class="small text-muted">{{ category_stats.get('产品规划', 0) }} 条目</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-clipboard-data display-4 text-info"></i>
+                        <h6 class="mt-2">需求分析</h6>
+                        <p class="small text-muted">{{ category_stats.get('需求分析', 0) }} 条目</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people display-4 text-success"></i>
+                        <h6 class="mt-2">用户研究</h6>
+                        <p class="small text-muted">{{ category_stats.get('用户研究', 0) }} 条目</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <i class="bi bi-graph-up display-4 text-primary"></i>
+                        <h6 class="mt-2">竞品分析</h6>
+                        <p class="small text-muted">{{ category_stats.get('竞品分析', 0) }} 条目</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteKnowledge(id) {
+    if (confirm('确定要删除这个知识库条目吗？')) {
+        fetch(`/knowledge/${id}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('删除失败：' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('删除失败:', error);
+            alert('删除失败，请重试');
+        });
+    }
+}
+</script>
+{% endblock %}

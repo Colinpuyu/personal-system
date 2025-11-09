@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}搜索结果 - {{ query }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1>搜索结果: "{{ query }}"</h1>
+            
+            <!-- 搜索统计 -->
+            <div class="alert alert-info">
+                找到 
+                <strong>{{ knowledge_results|length + project_results|length + document_results|length }}</strong> 个结果
+                （知识库: {{ knowledge_results|length }}, 项目: {{ project_results|length }}, 文档: {{ document_results|length }}）
+            </div>
+            
+            <!-- 知识库结果 -->
+            {% if knowledge_results %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>知识库结果 ({{ knowledge_results|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in knowledge_results %}
+                    <div class="search-result-item mb-3 p-3 border rounded">
+                        <h6>
+                            <a href="{{ url_for('product_space.knowledge_detail', id=item.id) }}" class="text-decoration-none">
+                                {{ item.title }}
+                            </a>
+                        </h6>
+                        <p class="text-muted mb-2">
+                            来源: {{ item.source }} | 置信度: {{ item.confidence }}/5 | 更新时间: {{ item.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                        </p>
+                        <p class="mb-1">
+                            {{ item.content[:200] }}{% if item.content|length > 200 %}...{% endif %}
+                        </p>
+                        {% if item.get_tags_list() %}
+                        <div class="tags">
+                            {% for tag in item.get_tags_list() %}
+                            <span class="badge bg-secondary me-1">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- 项目结果 -->
+            {% if project_results %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>项目结果 ({{ project_results|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in project_results %}
+                    <div class="search-result-item mb-3 p-3 border rounded">
+                        <h6>
+                            <a href="{{ url_for('company_projects.project_detail', id=item.id) }}" class="text-decoration-none">
+                                {{ item.name }}
+                            </a>
+                        </h6>
+                        <p class="text-muted mb-2">
+                            状态: {{ item.status }} | 公司: {{ item.company.name }} | 创建时间: {{ item.created_at.strftime('%Y-%m-%d') }}
+                        </p>
+                        {% if item.description %}
+                        <p class="mb-1">
+                            {{ item.description[:200] }}{% if item.description|length > 200 %}...{% endif %}
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- 文档结果 -->
+            {% if document_results %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>文档结果 ({{ document_results|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in document_results %}
+                    <div class="search-result-item mb-3 p-3 border rounded">
+                        <h6>
+                            <a href="{{ url_for('company_projects.document_detail', id=item.id) }}" class="text-decoration-none">
+                                {{ item.title }}
+                            </a>
+                        </h6>
+                        <p class="text-muted mb-2">
+                            类型: {{ item.document_type }} | 项目: {{ item.project.name }} | 创建时间: {{ item.created_at.strftime('%Y-%m-%d') }}
+                        </p>
+                        {% if item.file_path %}
+                        <p class="mb-1">
+                            <small class="text-muted">文件路径: {{ item.file_path }}</small>
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- 无结果提示 -->
+            {% if not knowledge_results and not project_results and not document_results %}
+            <div class="alert alert-warning">
+                <h5>未找到相关结果</h5>
+                <p>建议：</p>
+                <ul>
+                    <li>检查关键词拼写是否正确</li>
+                    <li>尝试使用不同的关键词</li>
+                    <li>使用更通用的词汇</li>
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- 返回按钮 -->
+            <div class="mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回首页
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+// 搜索结果页面可以添加一些交互功能
+$(document).ready(function() {
+    // 高亮搜索关键词
+    function highlightText(text, query) {
+        if (!query) return text;
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    }
+    
+    // 高亮搜索结果中的关键词
+    const query = '{{ query }}';
+    if (query) {
+        $('.search-result-item').each(function() {
+            const $this = $(this);
+            $this.html(highlightText($this.html(), query));
+        });
+    }
+});
+</script>
+{% endblock %}
