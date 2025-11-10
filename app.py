@@ -25,66 +25,24 @@ def create_app(config_name='default'):
     @app.route('/')
     def index():
         """主页 - 显示概览"""
-        # 统计数据
+        # 获取统计数据
         stats = {
             'knowledge_count': KnowledgeBase.query.count(),
             'company_count': Company.query.count(),
             'project_count': Project.query.count(),
-            'document_count': Document.query.count(),
+            'document_count': Document.query.count()
         }
-
-        # 最新知识库与项目
+        
+        # 获取最近的知识库条目
         recent_knowledge = KnowledgeBase.query.order_by(KnowledgeBase.created_at.desc()).limit(5).all()
+        
+        # 获取最新项目
         recent_projects = Project.query.order_by(Project.created_at.desc()).limit(5).all()
-
-        # 最近活动（基于 Analytics 埋点）
-        recent_activities_raw = Analytics.query.order_by(Analytics.timestamp.desc()).limit(5).all()
-        recent_activities = []
-        for evt in recent_activities_raw:
-            item = {
-                'title': '系统活动',
-                'description': '',
-                'icon': 'activity',
-                'type': evt.event_type,
-                'time': evt.timestamp.strftime('%Y-%m-%d %H:%M') if evt.timestamp else ''
-            }
-            if evt.event_type == 'search':
-                item.update({
-                    'title': f"搜索: {evt.search_query or ''}",
-                    'description': '执行了一次搜索',
-                    'icon': 'search',
-                    'type': '搜索'
-                })
-            elif evt.event_type == 'file_open':
-                item.update({
-                    'title': f"查看文档 #{evt.entity_id}",
-                    'description': '打开了文档',
-                    'icon': 'file-text',
-                    'type': '文档'
-                })
-            elif evt.event_type == 'note_view':
-                item.update({
-                    'title': f"查看知识库 #{evt.entity_id}",
-                    'description': '查看了知识条目',
-                    'icon': 'book',
-                    'type': '知识库'
-                })
-            elif evt.event_type == 'note_create':
-                item.update({
-                    'title': f"创建知识库 #{evt.entity_id}",
-                    'description': '创建了知识条目',
-                    'icon': 'plus-circle',
-                    'type': '知识库'
-                })
-            recent_activities.append(item)
-
-        return render_template(
-            'index.html',
-            stats=stats,
-            recent_knowledge=recent_knowledge,
-            recent_projects=recent_projects,
-            recent_activities=recent_activities,
-        )
+        
+        return render_template('index.html', 
+                             stats=stats,
+                             recent_knowledge=recent_knowledge,
+                             recent_projects=recent_projects)
     
     @app.route('/search')
     def search():
@@ -132,4 +90,4 @@ def create_app(config_name='default'):
 
 if __name__ == '__main__':
     app = create_app('development')
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5002)

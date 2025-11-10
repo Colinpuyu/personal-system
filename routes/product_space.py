@@ -109,7 +109,7 @@ def knowledge_edit(id):
         flash('知识条目更新成功！', 'success')
         return redirect(url_for('product_space.knowledge_detail', id=id))
     
-    return render_template('product/knowledge_form.html', item=knowledge)
+    return render_template('product/knowledge_form.html', knowledge=knowledge)
 
 @product_space_bp.route('/knowledge/<int:id>/delete', methods=['POST'])
 def knowledge_delete(id):

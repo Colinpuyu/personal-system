@@ -75,9 +75,9 @@ def init_database():
                 ),
                 KnowledgeBase(
                     title="敏捷开发方法论",
-                    content="""敏捷开发是一种以人为核心、迭代、循序渐进的方法。
+                    content="""敏捷开发是一种以人为核心、迭代、循序渐进的开发方法。
 
-价值观：
+核心价值观：
 - 个体和互动高于流程和工具
 - 工作的软件高于详尽的文档
 - 客户合作高于合同谈判
@@ -94,12 +94,10 @@ def init_database():
                 )
             ]
             
-            # 添加知识库条目并设置标签
-            sample_knowledge[0].set_tags_list(['产品规划', '最佳实践', '方法论'])
-            sample_knowledge[1].set_tags_list(['UX', '用户体验', '设计原则'])
-            sample_knowledge[2].set_tags_list(['敏捷开发', '方法论', 'Scrum'])
-            
+            # 添加知识库条目
             for knowledge in sample_knowledge:
+                # 设置标签
+                knowledge.set_tags_list(['产品规划', '最佳实践', '方法论'])
                 db.session.add(knowledge)
             
             # 创建示例公司
@@ -152,17 +150,17 @@ def init_database():
             sample_documents = [
                 Document(
                     title="项目需求文档",
-                    document_type="文档",
+                    document_type="需求文档",
                     project_id=sample_projects[0].id
                 ),
                 Document(
                     title="技术方案设计",
-                    document_type="文档",
+                    document_type="技术文档",
                     project_id=sample_projects[0].id
                 ),
                 Document(
                     title="用户界面设计",
-                    document_type="设计稿",
+                    document_type="设计文档",
                     project_id=sample_projects[1].id
                 )
             ]

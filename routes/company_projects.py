@@ -33,27 +33,6 @@ def company_detail(company_id):
                          company=company, 
                          projects=projects)
 
-@company_projects_bp.route('/<int:company_id>/projects')
-def company_projects(company_id):
-    """公司项目列表页面"""
-    company = Company.query.get_or_404(company_id)
-    
-    # 获取项目状态筛选
-    status = request.args.get('status')
-    
-    # 基础查询
-    projects_query = Project.query.filter_by(company_id=company_id)
-    
-    # 应用状态筛选
-    if status:
-        projects_query = projects_query.filter_by(status=status)
-    
-    projects = projects_query.order_by(Project.created_at.desc()).all()
-    
-    return render_template('company/project_list.html', 
-                         company=company, 
-                         projects=projects)
-
 @company_projects_bp.route('/<int:company_id>/projects/new', methods=['GET', 'POST'])
 def project_new(company_id):
     """创建新项目"""
@@ -248,8 +227,146 @@ def api_projects_search():
         'name': project.name,
         'description': project.description,
         'status': project.status,
-        'company_name': project.company.name,
-        'company_id': project.company_id
+        'company_name': project.company.name
     } for project in results]
     
     return jsonify(data)
+
+@company_projects_bp.route('/api/companies', methods=['POST'])
+def api_company_create():
+    """创建新公司 API"""
+    try:
+        data = request.get_json()
+        
+        if not data or not data.get('name'):
+            return jsonify({'success': False, 'error': '公司名称不能为空'}), 400
+        
+        # 检查公司名称是否已存在
+        existing_company = Company.query.filter_by(name=data['name']).first()
+        if existing_company:
+            return jsonify({'success': False, 'error': '该公司名称已存在'}), 400
+        
+        company = Company(
+            name=data['name'],
+            description=data.get('description', '')
+        )
+        
+        db.session.add(company)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'id': company.id})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@company_projects_bp.route('/api/companies/<int:company_id>')
+def api_company_detail(company_id):
+    """获取公司详情 API"""
+    company = Company.query.get_or_404(company_id)
+    
+    return jsonify({
+        'id': company.id,
+        'name': company.name,
+        'description': company.description,
+        'created_at': company.created_at.isoformat() if company.created_at else None
+    })
+
+@company_projects_bp.route('/api/companies/<int:company_id>', methods=['PUT'])
+def api_company_update(company_id):
+    """更新公司信息 API"""
+    try:
+        company = Company.query.get_or_404(company_id)
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': '请求数据不能为空'}), 400
+        
+        # 如果名称被修改，检查新名称是否已存在
+        if data.get('name') and data['name'] != company.name:
+            existing_company = Company.query.filter_by(name=data['name']).first()
+            if existing_company:
+                return jsonify({'success': False, 'error': '该公司名称已存在'}), 400
+        
+        company.name = data.get('name', company.name)
+        company.description = data.get('description', company.description)
+        
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@company_projects_bp.route('/api/companies/<int:company_id>', methods=['DELETE'])
+def api_company_delete(company_id):
+    """删除公司 API"""
+    try:
+        company = Company.query.get_or_404(company_id)
+        
+        # 删除公司时，级联删除所有相关项目和文档
+        for project in company.projects:
+            # 删除项目的所有文档
+            for document in project.documents:
+                db.session.delete(document)
+            db.session.delete(project)
+        
+        db.session.delete(company)
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@company_projects_bp.route('/api/projects/<int:project_id>', methods=['DELETE'])
+def api_project_delete(project_id):
+    """删除项目 API"""
+    try:
+        project = Project.query.get_or_404(project_id)
+        company_id = project.company_id
+        
+        # 删除项目时，级联删除所有相关文档
+        for document in project.documents:
+            # 如果文档有文件路径，删除物理文件
+            if document.file_path and os.path.exists(document.file_path):
+                try:
+                    os.remove(document.file_path)
+                except Exception as e:
+                    print(f"删除文件失败: {e}")
+            db.session.delete(document)
+        
+        db.session.delete(project)
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@company_projects_bp.route('/api/documents/<int:document_id>', methods=['DELETE'])
+def api_document_delete(document_id):
+    """删除文档 API"""
+    try:
+        document = Document.query.get_or_404(document_id)
+        
+        # 如果文档有文件路径，删除物理文件
+        if document.file_path and os.path.exists(document.file_path):
+            try:
+                os.remove(document.file_path)
+            except Exception as e:
+                print(f"删除文件失败: {e}")
+        
+        db.session.delete(document)
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500

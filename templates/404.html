@@ -1,21 +1,26 @@
 {% extends "base.html" %}
 
-{% block title %}页面未找到 - 404{% endblock %}
+{% block title %}页面未找到 - 个人管理系统{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="text-center">
-            <h1 class="display-1">404</h1>
-            <h2 class="mb-4">页面未找到</h2>
-            <p class="lead mb-4">抱歉，您访问的页面不存在或已被移动。</p>
-            <div class="mb-4">
-                <a href="{{ url_for('index') }}" class="btn btn-primary me-2">
-                    <i class="bi bi-house"></i> 返回首页
-                </a>
-                <a href="javascript:history.back()" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> 返回上页
-                </a>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="text-center">
+                <h1 class="display-1 text-muted">404</h1>
+                <h2 class="mb-4">页面未找到</h2>
+                <p class="text-muted mb-4">抱歉，您访问的页面不存在或已被移动。</p>
+                <div class="mb-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary me-2">
+                        <i class="fas fa-home"></i> 返回首页
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> 返回上一页
+                    </button>
+                </div>
+                <div class="text-muted small">
+                    <p>如果您认为这是一个错误，请联系系统管理员。</p>
+                </div>
             </div>
         </div>
     </div>

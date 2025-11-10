@@ -1,119 +1,14 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project Detail</title>
+</head>
+<body>
+    <h1>Project Detail</h1>
+    <p>Project Name: {{ project.name }}</p>
+    <p>Description: {{ project.description }}</p>
+    <p>Status: {{ project.status }}</p>
 
-{% block title %}{{ project.name }} - 项目详情 - 公司项目管理{% endblock %}
-
-{% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <!-- 侧边栏 -->
-        <div class="col-md-3 col-lg-2 px-0">
-            <div class="sidebar p-3">
-                <h5 class="mb-3">公司项目管理</h5>
-                <nav class="nav flex-column">
-                    <a class="nav-link" href="{{ url_for('company_projects.company_list') }}">
-                        <i class="bi bi-building me-2"></i>公司列表
-                    </a>
-                    <a class="nav-link" href="{{ url_for('company_projects.company_detail', company_id=company.id) }}">
-                        <i class="bi bi-building-fill me-2"></i>{{ company.name }}
-                    </a>
-                    <a class="nav-link" href="{{ url_for('company_projects.company_projects', company_id=company.id) }}">
-                        <i class="bi bi-kanban me-2"></i>项目列表
-                    </a>
-                    <a class="nav-link active" href="#">
-                        <i class="bi bi-folder me-2"></i>{{ project.name }}
-                    </a>
-                </nav>
-            </div>
-        </div>
-
-        <!-- 主内容区 -->
-        <div class="col-md-9 col-lg-10">
-            <div class="main-content">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2>{{ project.name }}</h2>
-                        <p class="text-muted mb-0">状态：
-                            <span class="badge 
-                                {% if project.status == '进行中' %}bg-success
-                                {% elif project.status == '计划中' %}bg-warning
-                                {% elif project.status == '已完成' %}bg-info
-                                {% else %}bg-secondary
-                                {% endif %}">{{ project.status }}</span>
-                        </p>
-                    </div>
-                    <div>
-                        <a href="{{ url_for('company_projects.project_edit', company_id=company.id, project_id=project.id) }}" class="btn btn-outline-primary">
-                            <i class="bi bi-pencil-square me-2"></i>编辑项目
-                        </a>
-                        <a href="{{ url_for('company_projects.document_new', company_id=company.id, project_id=project.id) }}" class="btn btn-primary">
-                            <i class="bi bi-plus-circle me-2"></i>上传文档
-                        </a>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="mb-0">项目描述</h5>
-                            </div>
-                            <div class="card-body">
-                                <p class="mb-0">{{ project.description }}</p>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">项目文档</h5>
-                                <a href="{{ url_for('company_projects.document_new', company_id=company.id, project_id=project.id) }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-plus-circle me-2"></i>上传文档
-                                </a>
-                            </div>
-                            <div class="card-body">
-                                {% if documents %}
-                                <ul class="list-group">
-                                    {% for doc in documents %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <a href="{{ url_for('company_projects.document_detail', company_id=company.id, project_id=project.id, document_id=doc.id) }}" class="text-decoration-none">
-                                                {{ doc.title }}
-                                            </a>
-                                            <small class="text-muted ms-2">类型：{{ doc.document_type }}</small>
-                                        </div>
-                                        <small class="text-muted">
-                                            <i class="bi bi-calendar me-1"></i>{{ doc.created_at.strftime('%Y-%m-%d') }}
-                                        </small>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                                {% else %}
-                                <div class="alert alert-info mb-0">暂无文档</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">项目信息</h5>
-                            </div>
-                            <div class="card-body">
-                                <dl class="row mb-0">
-                                    <dt class="col-sm-4">公司</dt>
-                                    <dd class="col-sm-8">{{ company.name }}</dd>
-                                    <dt class="col-sm-4">创建时间</dt>
-                                    <dd class="col-sm-8">{{ project.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
-                                    {% if project.updated_at %}
-                                    <dt class="col-sm-4">更新时间</dt>
-                                    <dd class="col-sm-8">{{ project.updated_at.strftime('%Y-%m-%d %H:%M') }}</dd>
-                                    {% endif %}
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-}</div>
-{% endblock %}
+    <a href="/projects">Back to Projects</a>
+</body>
+</html>

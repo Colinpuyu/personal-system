@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 {% extends "base.html" %}
 
 {% block title %}公司列表 - 公司项目管理{% endblock %}
@@ -8,7 +9,7 @@
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
         <i class="bi bi-plus-circle"></i> 添加公司
     </button>
-</div>
+    </div>
 
 <!-- 搜索栏 -->
 <div class="row mb-4">
@@ -20,7 +21,7 @@
             </button>
         </form>
     </div>
-</div>
+    </div>
 
 <!-- 公司列表 -->
 {% if companies %}
@@ -34,10 +35,10 @@
                     <a href="{{ url_for('company_projects.company_detail', company_id=company.id) }}" class="btn btn-outline-primary">
                         <i class="bi bi-eye"></i>
                     </a>
-                    <button type="button" class="btn btn-outline-secondary" onclick="editCompany({{ company.id }})">
+                    <button type="button" class="btn btn-outline-secondary btn-edit-company" data-company-id="{{ company.id }}">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-danger" onclick="deleteCompany({{ company.id }})">
+                    <button type="button" class="btn btn-outline-danger btn-delete-company" data-company-id="{{ company.id }}">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
@@ -63,12 +64,12 @@
         </div>
     </div>
     {% endfor %}
-</div>
+    </div>
 {% else %}
 <div class="alert alert-info">
     <i class="bi bi-info-circle"></i> 暂无公司信息，
     <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#addCompanyModal">点击添加第一个公司</button>
-</div>
+    </div>
 {% endif %}
 
 <!-- 添加公司模态框 -->
@@ -97,7 +98,7 @@
             </form>
         </div>
     </div>
-</div>
+    </div>
 
 <!-- 编辑公司模态框 -->
 <div class="modal fade" id="editCompanyModal" tabindex="-1">
@@ -126,109 +127,112 @@
             </form>
         </div>
     </div>
-</div>
+    </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// 添加公司
-document.getElementById('addCompanyForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const data = {
-        name: document.getElementById('companyName').value,
-        description: document.getElementById('companyDescription').value
-    };
-    
-    fetch('/api/companies', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            location.reload();
-        } else {
-            alert('添加失败：' + result.error);
-        }
-    })
-    .catch(error => {
-        console.error('添加失败:', error);
-        alert('添加失败，请重试');
-    });
-});
-
-// 编辑公司
-function editCompany(companyId) {
-    fetch(`/api/companies/${companyId}`)
-        .then(response => response.json())
-        .then(company => {
-            document.getElementById('editCompanyId').value = company.id;
-            document.getElementById('editCompanyName').value = company.name;
-            document.getElementById('editCompanyDescription').value = company.description;
-            
-            const modal = new bootstrap.Modal(document.getElementById('editCompanyModal'));
-            modal.show();
-        })
-        .catch(error => {
-            console.error('获取公司信息失败:', error);
-            alert('获取公司信息失败');
-        });
-}
-
-// 保存编辑
-document.getElementById('editCompanyForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const companyId = document.getElementById('editCompanyId').value;
-    const data = {
-        name: document.getElementById('editCompanyName').value,
-        description: document.getElementById('editCompanyDescription').value
-    };
-    
-    fetch(`/api/companies/${companyId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            location.reload();
-        } else {
-            alert('保存失败：' + result.error);
-        }
-    })
-    .catch(error => {
-        console.error('保存失败:', error);
-        alert('保存失败，请重试');
-    });
-});
-
-// 删除公司
-function deleteCompany(companyId) {
-    if (confirm('确定要删除这家公司吗？这将同时删除该公司的所有项目和文档。')) {
-        fetch(`/api/companies/${companyId}`, {
-            method: 'DELETE'
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                location.reload();
-            } else {
-                alert('删除失败：' + result.error);
-            }
-        })
-        .catch(error => {
-            console.error('删除失败:', error);
-            alert('删除失败，请重试');
+document.addEventListener('DOMContentLoaded', function() {
+    // 添加公司
+    const addCompanyForm = document.getElementById('addCompanyForm');
+    if (addCompanyForm) {
+        addCompanyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('companyName').value,
+                description: document.getElementById('companyDescription').value
+            };
+            fetch('/company/api/companies', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('添加失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('添加失败:', error);
+                alert('添加失败，请重试');
+            });
         });
     }
-}
+
+    // 编辑公司按钮事件
+    document.querySelectorAll('.btn-edit-company').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const companyId = btn.dataset.companyId;
+            fetch(`/company/api/companies/${companyId}`)
+                .then(response => response.json())
+                .then(company => {
+                    document.getElementById('editCompanyId').value = company.id;
+                    document.getElementById('editCompanyName').value = company.name;
+                    document.getElementById('editCompanyDescription').value = company.description || '';
+                    const modal = new bootstrap.Modal(document.getElementById('editCompanyModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('获取公司信息失败:', error);
+                    alert('获取公司信息失败');
+                });
+        });
+    });
+
+    // 保存编辑
+    const editCompanyForm = document.getElementById('editCompanyForm');
+    if (editCompanyForm) {
+        editCompanyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const companyId = document.getElementById('editCompanyId').value;
+            const data = {
+                name: document.getElementById('editCompanyName').value,
+                description: document.getElementById('editCompanyDescription').value
+            };
+            fetch(`/company/api/companies/${companyId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('保存失败：' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('保存失败:', error);
+                alert('保存失败，请重试');
+            });
+        });
+    }
+
+    // 删除公司按钮事件
+    document.querySelectorAll('.btn-delete-company').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const companyId = btn.dataset.companyId;
+            if (confirm('确定要删除这家公司吗？这将同时删除该公司的所有项目和文档。')) {
+                fetch(`/company/api/companies/${companyId}`, { method: 'DELETE' })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            location.reload();
+                        } else {
+                            alert('删除失败：' + result.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('删除失败:', error);
+                        alert('删除失败，请重试');
+                    });
+            }
+        });
+    });
+});
 </script>
 {% endblock %}

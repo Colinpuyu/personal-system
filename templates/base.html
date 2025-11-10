@@ -176,9 +176,9 @@
             
             // 执行搜索
             Promise.all([
-                fetch(`/api/knowledge/search?q=${encodeURIComponent(query)}`),
-                fetch(`/api/companies/search?q=${encodeURIComponent(query)}`),
-                fetch(`/api/projects/search?q=${encodeURIComponent(query)}`)
+                fetch(`/product/api/knowledge/search?q=${encodeURIComponent(query)}`),
+                fetch(`/company/api/companies/search?q=${encodeURIComponent(query)}`),
+                fetch(`/company/api/projects/search?q=${encodeURIComponent(query)}`)
             ])
             .then(responses => Promise.all(responses.map(r => r.json())))
             .then(results => {
@@ -202,7 +202,7 @@
                     html += `<a href="/product/knowledge/${item.id}" class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
                             <h6 class="mb-1">${item.title}</h6>
-                            <small>${item.category}</small>
+                            <small>${item.source || '未分类'}</small>
                         </div>
                         <p class="mb-1">${item.content ? item.content.substring(0, 100) + '...' : ''}</p>
                     </a>`;
@@ -215,7 +215,7 @@
                 html += '<h6 class="mt-3">公司</h6>';
                 html += '<div class="list-group">';
                 companyResults.forEach(item => {
-                    html += `<a href="/company/${item.id}" class="list-group-item list-group-item-action">
+                    html += `<a href="/company/companies/${item.id}" class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
                             <h6 class="mb-1">${item.name}</h6>
                         </div>
@@ -230,7 +230,7 @@
                 html += '<h6 class="mt-3">项目</h6>';
                 html += '<div class="list-group">';
                 projectResults.forEach(item => {
-                    html += `<a href="/company/${item.company_id}/projects/${item.id}" class="list-group-item list-group-item-action">
+                    html += `<a href="/company/companies/${item.company_name}/projects/${item.id}" class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
                             <h6 class="mb-1">${item.name}</h6>
                             <span class="badge bg-primary">${item.status}</span>
