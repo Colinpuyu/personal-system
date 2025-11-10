@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{% if item %}编辑知识库{% else %}新建知识库{% endif %} - 产品经理空间{% endblock %}
+{% block title %}{% if knowledge %}编辑知识库{% else %}新建知识库{% endif %} - 产品经理空间{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -8,7 +8,7 @@
         <div class="card">
             <div class="card-header">
                 <h4 class="mb-0">
-                    {% if item %}
+                    {% if knowledge %}
                         <i class="bi bi-pencil"></i> 编辑知识库
                     {% else %}
                         <i class="bi bi-plus-circle"></i> 新建知识库
@@ -16,41 +16,41 @@
                 </h4>
             </div>
             <div class="card-body">
-                <form method="POST" id="knowledgeForm">
+                <form method="POST" id="knowledgeForm" action="{% if knowledge %}{{ url_for('product_space.knowledge_edit', id=knowledge.id) }}{% else %}{{ url_for('product_space.knowledge_new') }}{% endif %}">
                     <div class="mb-3">
                         <label for="title" class="form-label">标题 <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="title" name="title" 
-                               value="{{ item.title if item else '' }}" required>
+                               value="{{ knowledge.title if knowledge else '' }}" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="category" class="form-label">分类 <span class="text-danger">*</span></label>
                         <select class="form-select" id="category" name="category" required>
                             <option value="">请选择分类</option>
-                            <option value="产品规划" {% if item and item.category == '产品规划' %}selected{% endif %}>产品规划</option>
-                            <option value="需求分析" {% if item and item.category == '需求分析' %}selected{% endif %}>需求分析</option>
-                            <option value="用户研究" {% if item and item.category == '用户研究' %}selected{% endif %}>用户研究</option>
-                            <option value="竞品分析" {% if item and item.category == '竞品分析' %}selected{% endif %}>竞品分析</option>
-                            <option value="其他" {% if item and item.category == '其他' %}selected{% endif %}>其他</option>
+                            <option value="产品规划" {% if knowledge and knowledge.category == '产品规划' %}selected{% endif %}>产品规划</option>
+                            <option value="需求分析" {% if knowledge and knowledge.category == '需求分析' %}selected{% endif %}>需求分析</option>
+                            <option value="用户研究" {% if knowledge and knowledge.category == '用户研究' %}selected{% endif %}>用户研究</option>
+                            <option value="竞品分析" {% if knowledge and knowledge.category == '竞品分析' %}selected{% endif %}>竞品分析</option>
+                            <option value="其他" {% if knowledge and knowledge.category == '其他' %}selected{% endif %}>其他</option>
                         </select>
                     </div>
                     
                     <div class="mb-3">
                         <label for="tags" class="form-label">标签</label>
                         <input type="text" class="form-control" id="tags" name="tags" 
-                               value="{{ item.tags if item else '' }}" 
+                               value="{{ knowledge.tags if knowledge else '' }}" 
                                placeholder="用逗号分隔多个标签，如：产品设计,用户体验,移动端">
                         <div class="form-text">用逗号分隔多个标签</div>
                     </div>
                     
                     <div class="mb-3">
                         <label for="content" class="form-label">内容 <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="content" name="content" rows="10" required>{{ item.content if item else '' }}</textarea>
+                        <textarea class="form-control" id="content" name="content" rows="10" required>{{ knowledge.content if knowledge else '' }}</textarea>
                     </div>
                     
                     <div class="mb-3">
                         <label for="notes" class="form-label">备注</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="3">{{ item.notes if item else '' }}</textarea>
+                        <textarea class="form-control" id="notes" name="notes" rows="3">{{ knowledge.notes if knowledge else '' }}</textarea>
                     </div>
                     
                     <div class="d-flex justify-content-between">
@@ -62,7 +62,7 @@
                                 <i class="bi bi-eye"></i> 预览
                             </button>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> {% if item %}保存修改{% else %}创建知识库{% endif %}
+                                <i class="bi bi-save"></i> {% if knowledge %}保存修改{% else %}创建知识库{% endif %}
                             </button>
                         </div>
                     </div>
