@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}知识库详情 - 产品经理空间{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-journal-text"></i> {{ knowledge.title }}</h2>
+    <div>
+        {% if knowledge.source %}
+            <span class="badge bg-secondary me-2">{{ knowledge.source }}</span>
+        {% endif %}
+        <span class="badge bg-info">可信度 {{ knowledge.confidence or 3 }}</span>
+    </div>
+    
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <small class="text-muted me-3">
+                <i class="bi bi-clock"></i>
+                更新于 {{ (knowledge.updated_at or knowledge.created_at).strftime('%Y-%m-%d %H:%M') if (knowledge.updated_at or knowledge.created_at) else '未知时间' }}
+            </small>
+            <small class="text-muted">
+                <i class="bi bi-eye"></i> 访问 {{ knowledge.access_count or 0 }}
+            </small>
+        </div>
+        <div>
+            <a href="{{ url_for('product_space.knowledge_edit', id=knowledge.id) }}" class="btn btn-sm btn-outline-secondary me-2">
+                <i class="bi bi-pencil"></i> 编辑
+            </a>
+            <form id="deleteForm" method="POST" action="{{ url_for('product_space.knowledge_delete', id=knowledge.id) }}" style="display:inline;">
+                <button type="button" class="btn btn-sm btn-outline-danger" id="deleteBtn" data-knowledge-id="{{ knowledge.id }}">
+                    <i class="bi bi-trash"></i> 删除
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if knowledge.tags %}
+            <div class="mb-3">
+                {% for tag in knowledge.get_tags_list() %}
+                    <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="mt-3" style="white-space: pre-wrap;">
+            {{ knowledge.content or '' }}
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between">
+    <a href="{{ url_for('product_space.knowledge_list') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> 返回列表
+    </a>
+    <a href="{{ url_for('product_space.capability_map') }}" class="btn btn-outline-primary">
+        <i class="bi bi-diagram-3"></i> 查看能力地图
+    </a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('deleteBtn')?.addEventListener('click', function() {
+    if (confirm('确定要删除这个知识库条目吗？')) {
+        document.getElementById('deleteForm').submit();
+    }
+});
+</script>
+{% endblock %}

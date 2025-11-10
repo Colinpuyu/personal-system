@@ -2,6 +2,17 @@
 
 {% block title %}知识库列表 - 产品经理空间{% endblock %}
 
+{% block head %}
+<style>
+  /* 统计卡样式补充 */
+  .stat-card { padding: 16px 0; }
+  .stat-card .stat-icon { font-size: 2.5rem; line-height: 1; }
+  .stat-card h6 { margin-top: 8px; }
+  .stat-card p { margin-bottom: 0; }
+  .card.bg-light .card-body.text-center { padding: 16px; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-book"></i> 知识库列表</h2>
@@ -15,26 +26,37 @@
     <div class="col-md-4">
         <form method="GET" class="d-flex">
             <input type="text" name="search" class="form-control me-2" placeholder="搜索知识库..." value="{{ request.args.get('search', '') }}">
+            <!-- 保留当前筛选 -->
+            <input type="hidden" name="source" value="{{ request.args.get('source', '') }}">
+            <input type="hidden" name="tag" value="{{ request.args.get('tag', '') }}">
             <button type="submit" class="btn btn-outline-primary">
                 <i class="bi bi-search"></i>
             </button>
         </form>
     </div>
     <div class="col-md-3">
-        <select name="source" class="form-select" onchange="this.form.submit()">
-            <option value="">所有来源</option>
-            {% for source in all_sources %}
-                <option value="{{ source }}" {% if request.args.get('source') == source %}selected{% endif %}>{{ source }}</option>
-            {% endfor %}
-        </select>
+        <form method="GET">
+            <input type="hidden" name="search" value="{{ request.args.get('search', '') }}">
+            <input type="hidden" name="tag" value="{{ request.args.get('tag', '') }}">
+            <select name="source" class="form-select" onchange="this.form.submit()">
+                <option value="">所有来源</option>
+                {% for source in all_sources %}
+                    <option value="{{ source }}" {% if request.args.get('source') == source %}selected{% endif %}>{{ source }}</option>
+                {% endfor %}
+            </select>
+        </form>
     </div>
     <div class="col-md-3">
-        <select name="tag" class="form-select" onchange="this.form.submit()">
-            <option value="">所有标签</option>
-            {% for tag in all_tags %}
-                <option value="{{ tag }}" {% if request.args.get('tag') == tag %}selected{% endif %}>{{ tag }}</option>
-            {% endfor %}
-        </select>
+        <form method="GET">
+            <input type="hidden" name="search" value="{{ request.args.get('search', '') }}">
+            <input type="hidden" name="source" value="{{ request.args.get('source', '') }}">
+            <select name="tag" class="form-select" onchange="this.form.submit()">
+                <option value="">所有标签</option>
+                {% for tag in all_tags %}
+                    <option value="{{ tag }}" {% if request.args.get('tag') == tag %}selected{% endif %}>{{ tag }}</option>
+                {% endfor %}
+            </select>
+        </form>
     </div>
 </div>
 
@@ -105,8 +127,8 @@
         <div class="row">
             <div class="col-md-3 mb-3">
                 <div class="card bg-light">
-                    <div class="card-body text-center">
-                        <i class="bi bi-book display-4 text-primary"></i>
+                    <div class="card-body text-center stat-card">
+                        <i class="bi bi-book stat-icon text-primary"></i>
                         <h6 class="mt-2">总条目数</h6>
                         <p class="small text-muted">{{ knowledge_items|length }} 条目</p>
                     </div>
@@ -114,8 +136,8 @@
             </div>
             <div class="col-md-3 mb-3">
                 <div class="card bg-light">
-                    <div class="card-body text-center">
-                        <i class="bi bi-tags display-4 text-info"></i>
+                    <div class="card-body text-center stat-card">
+                        <i class="bi bi-tags stat-icon text-info"></i>
                         <h6 class="mt-2">标签数量</h6>
                         <p class="small text-muted">{{ all_tags|length }} 标签</p>
                     </div>
@@ -123,8 +145,8 @@
             </div>
             <div class="col-md-3 mb-3">
                 <div class="card bg-light">
-                    <div class="card-body text-center">
-                        <i class="bi bi-source display-4 text-success"></i>
+                    <div class="card-body text-center stat-card">
+                        <i class="bi bi-diagram-3 stat-icon text-success"></i>
                         <h6 class="mt-2">来源数量</h6>
                         <p class="small text-muted">{{ all_sources|length }} 来源</p>
                     </div>
@@ -132,8 +154,8 @@
             </div>
             <div class="col-md-3 mb-3">
                 <div class="card bg-light">
-                    <div class="card-body text-center">
-                        <i class="bi bi-eye display-4 text-warning"></i>
+                    <div class="card-body text-center stat-card">
+                        <i class="bi bi-eye stat-icon text-warning"></i>
                         <h6 class="mt-2">总访问</h6>
                         <p class="small text-muted">{{ knowledge_items|sum(attribute='access_count') }} 次</p>
                     </div>

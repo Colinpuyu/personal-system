@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}公司详情{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>{{ company.name }}</h1>
+  {% if company.description %}
+    <p class="desc">{{ company.description }}</p>
+  {% endif %}
+  <p class="meta">创建时间：{{ company.created_at or '未知' }}</p>
+  <p><a href="{{ url_for('company_projects.company_list') }}">返回公司列表</a></p>
+</div>
+
+<div class="actions">
+  <a class="btn" href="{{ url_for('company_projects.project_new', company_id=company.id) }}">新建项目</a>
+</div>
+
+<section class="filters">
+  <strong>筛选状态：</strong>
+  <a href="{{ url_for('company_projects.company_detail', company_id=company.id) }}" class="chip">全部</a>
+  {% for s in ['进行中', '已完成', '暂停', '计划中'] %}
+    <a href="{{ url_for('company_projects.company_detail', company_id=company.id, status=s) }}" class="chip">{{ s }}</a>
+  {% endfor %}
+</section>
+
+<section>
+  <h2>项目列表（{{ projects|length }}）</h2>
+  {% if projects %}
+    <ul class="project-list">
+      {% for project in projects %}
+        <li class="project-item">
+          <div class="project-head">
+            <a class="project-title" href="{{ url_for('company_projects.project_detail', company_id=company.id, project_id=project.id) }}">{{ project.name }}</a>
+            {% if project.status %}
+              <span class="status">{{ project.status }}</span>
+            {% endif %}
+          </div>
+          {% if project.description %}
+            <div class="project-desc">{{ project.description }}</div>
+          {% endif %}
+          <div class="project-meta">
+            <span>创建：{{ project.created_at or '未知' }}</span>
+            {% if project.updated_at %}
+              <span>更新：{{ project.updated_at }}</span>
+            {% endif %}
+          </div>
+          <div class="project-actions">
+            <a href="{{ url_for('company_projects.project_edit', company_id=company.id, project_id=project.id) }}">编辑</a>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>该公司暂无项目。</p>
+  {% endif %}
+</section>
+
+<style>
+  .page-header h1 { margin: 0 0 8px; }
+  .desc { color: #374151; }
+  .meta { color: #6b7280; font-size: 12px; }
+  .actions { margin: 12px 0; }
+  .btn { display: inline-block; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 6px; text-decoration: none; }
+  .filters { margin: 12px 0; }
+  .chip { display: inline-block; margin-right: 6px; padding: 4px 8px; border: 1px solid #e5e7eb; border-radius: 999px; text-decoration: none; font-size: 12px; }
+  .project-list { list-style: none; padding: 0; }
+  .project-item { padding: 10px 0; border-bottom: 1px dashed #eee; }
+  .project-item:last-child { border-bottom: none; }
+  .project-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .project-title { font-weight: 600; color: #1f2937; text-decoration: none; }
+  .project-title:hover { text-decoration: underline; }
+  .status { font-size: 12px; color: #6b7280; border: 1px solid #e5e7eb; border-radius: 6px; padding: 2px 6px; }
+  .project-desc { color: #374151; margin-top: 4px; }
+  .project-meta { color: #6b7280; font-size: 12px; display: flex; gap: 12px; margin-top: 4px; }
+  .project-actions { margin-top: 6px; }
+  @media (prefers-color-scheme: dark) {
+    .desc { color: #d1d5db; }
+    .project-title { color: #e5e7eb; }
+    .project-desc { color: #d1d5db; }
+    .project-meta { color: #9ca3af; }
+  }
+</style>
+{% endblock %}

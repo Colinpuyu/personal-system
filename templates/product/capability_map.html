@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}能力地图{% endblock %}
+
+{% block content %}
+<h1>能力地图</h1>
+
+{% if capability_data %}
+  <div class="capability-map">
+    {% for tag, items in capability_data.items() %}
+      <section class="capability-section">
+        <h2>{{ tag }}</h2>
+        {% if items %}
+          <ul class="capability-list">
+            {% for item in items %}
+              <li class="capability-item">
+                <div class="item-header">
+                  <a href="{{ url_for('product_space.knowledge_detail', id=item.id) }}">{{ item.title }}</a>
+                </div>
+                <div class="item-meta">
+                  <span>信心：{{ item.confidence or 'N/A' }}</span>
+                  <span>创建时间：{{ item.created_at or item.update_time or '未知' }}</span>
+                </div>
+                {% if item.tags %}
+                  <div class="item-tags">标签：{{ item.tags }}</div>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>该标签下暂无条目。</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>暂无能力数据可展示。</p>
+{% endif %}
+
+<style>
+  .capability-map { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .capability-section { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #fff; }
+  .capability-section h2 { margin: 0 0 8px; font-size: 18px; }
+  .capability-list { list-style: none; padding: 0; margin: 0; }
+  .capability-item { padding: 8px; border-bottom: 1px dashed #eee; }
+  .capability-item:last-child { border-bottom: none; }
+  .item-header a { font-weight: 600; color: #1f2937; text-decoration: none; }
+  .item-header a:hover { text-decoration: underline; }
+  .item-meta { color: #6b7280; font-size: 12px; display: flex; gap: 12px; margin-top: 4px; }
+  .item-tags { color: #374151; font-size: 12px; margin-top: 4px; }
+  @media (prefers-color-scheme: dark) {
+    .capability-section { background: #111827; border-color: #374151; }
+    .item-header a { color: #e5e7eb; }
+    .item-meta { color: #9ca3af; }
+    .item-tags { color: #d1d5db; }
+  }
+</style>
+{% endblock %}

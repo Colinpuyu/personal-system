@@ -11,6 +11,7 @@ def knowledge_list():
     # 获取筛选参数
     source = request.args.get('source')
     tag = request.args.get('tag')
+    search = request.args.get('search')
     
     # 基础查询
     query = KnowledgeBase.query
@@ -24,6 +25,13 @@ def knowledge_list():
         query = query.filter(KnowledgeBase.tags.contains(f'"{tag}"'))
     
     # 获取所有知识条目
+    # 关键词搜索
+    if search:
+        query = query.filter(
+            (KnowledgeBase.title.contains(search)) |
+            (KnowledgeBase.content.contains(search))
+        )
+
     knowledge_items = query.order_by(KnowledgeBase.created_at.desc()).all()
     
     # 获取所有可用的标签和来源用于筛选
